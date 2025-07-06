@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>📚 도서 검색 (알라딘 API)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin-left: 10px;
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .results {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .book {
+      background: white;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .book h3 {
+      margin: 0 0 5px;
+    }
+
+    .book a {
+      text-decoration: none;
+      color: #0078d7;
+    }
+
+    .book a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 도서 검색 (알라딘 API)</h1>
+
+  <form id="bookForm">
+    <input type="text" id="searchQuery" placeholder="도서명을 입력하세요..." required>
+    <button type="submit">검색</button>
+  </form>
+
+  <div class="results" id="results"></div>
+
+  <script>
+    const API_KEY = 'ttbsimpleego1150001'; // 알라딘 API 키로 교체
+    const form = document.getElementById('bookForm');
+    const resultsDiv = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = document.getElementById('searchQuery').value.trim();
+      if (!query) return;
+
+      resultsDiv.innerHTML = '🔎 검색 중...';
+
+      const url = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${API_KEY}&Query=${encodeURIComponent(query)}&output=js&Version=20131101&SearchTarget=Book&MaxResults=5`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!data.item || data.item.length === 0) {
+          resultsDiv.innerHTML = '❌ 검색 결과가 없습니다.';
+          return;
+        }
+
+        resultsDiv.innerHTML = '';
+        data.item.forEach((book, i) => {
+          const bookEl = document.createElement('div');
+          bookEl.className = 'book';
+          bookEl.innerHTML = `
+            <h3>${i + 1}. ${book.title}</h3>
+            <p><strong>저자:</strong> ${book.author}</p>
+            <p><strong>출판사:</strong> ${book.publisher}</p>
+            <a href="${book.link}" target="_blank">📖 상세 보기 (목차 확인)</a>
+          `;
+          resultsDiv.appendChild(bookEl);
+        });
+      } catch (err) {
+        resultsDiv.innerHTML = '⚠️ API 요청 중 오류가 발생했습니다.';
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
